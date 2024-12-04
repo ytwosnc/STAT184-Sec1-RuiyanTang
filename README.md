@@ -11,7 +11,7 @@ Above is the Stack bar chart for Percentage of applications across each major an
 
 # Results and Conclusions
 The admission rate for all other majors (Male higher) shows that gender bias still exist, but the reason is rather complicated. To view and better understand the detailed study and conclusion, see the bottom of .qmd file in code folder.
-![Graph](sample-graphs/000005.png)
+![Graph](sample-graphs/WechatIMG20.jpg)
 
 # Contact
 Feel free to reach out to me with the email address rft5253@psu.edu
