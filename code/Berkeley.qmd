@@ -1,0 +1,210 @@
+---
+title: "Berkeley Admission Bias Study"
+author: "Antonio the First Milwaukee"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: load-packages
+#| include: false
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+data = read.csv('berkeley_dataset.csv')
+```
+
+## Fundamental info of this dataset
+
+```{r}
+#| label: filter-data
+#| warning: false
+#| echo: True
+
+head(data)
+summary(data)
+```
+
+## Admission rates by gender
+
+From the table, we observe that female applicants have a total of **1494 accepted** and **2827 rejected**, while male applicants have **3738 accepted** and **4704 rejected**.
+
+Therefore we can calculate the admission rate for both genders, which is **34.5% for female** applicants and **44.5% for male** applicants.
+
+```{r}
+#| label: Agg-gender-data
+#| warning: false
+#| echo: true
+
+table(data$Gender, data$Admission)
+
+admission_rates_gender <- data %>%
+  group_by(Gender) %>%
+  summarize(
+    Total = n(),
+    Accepted = sum(Admission == "Accepted"),
+    Admission_Rate = Accepted / Total
+  )
+```
+
+```{r}
+#| label: Gender-bar-chart
+#| warning: false
+#| echo: true
+
+ggplot(admission_rates_gender, aes(x = Gender, y = Admission_Rate, fill = Gender)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Admission Rates by Gender", 
+       x = "Gender", 
+       y = "Admission Rate") +
+  theme_minimal() 
+```
+
+## Admissions rate by major
+
+In the same way, we can calculate admission rate for each major for future comparison.
+
+```{r}
+#| label: Agg-major-data
+#| warning: false
+#| echo: true
+
+admission_rate_major <- data %>%
+  select(Major, Admission) %>%
+  group_by(Major) %>%
+  summarize(
+    Total = n(),
+    Accepted = sum(Admission == "Accepted"),
+    Admission_Rate = Accepted / Total
+  )
+```
+
+```{r}
+#| label: Major-bar-chart
+#| warning: false
+#| echo: true
+
+ggplot(admission_rate_major, aes(x = Major, y = Admission_Rate, fill = Major)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Admission Rates by Major", 
+       x = "Major", 
+       y = "Admission Rate") +
+  theme_minimal()
+```
+
+## Applications by Gender-Major
+
+In this section, the numbers of application for each gender and major, and we can further calculate the application percentage of each gender for each major.
+
+*\*The percentage accumulation graph in this section is added since I considered it as more direct way to see the difference between male and female applications.*
+
+```{r}
+#| label: Agg-major/gender-data
+#| warning: false
+#| echo: true
+
+applications_gender_major <- data %>%
+  select(Major, Gender) %>%
+  group_by(Major, Gender) %>%
+  summarize(
+    Total = n(), .groups = "keep"
+  )
+```
+
+```{r}
+#| label: Major/gender-bar-chart
+#| warning: false
+#| echo: true
+
+ggplot(applications_gender_major, aes(x = Major, y = Total, fill = Gender)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Total Applications by Major and Gender", 
+       x = "Major", 
+       y = "Applications") +
+  theme_minimal()
+
+```
+
+```{r}
+#| label: Major/gender-perc-bar-chart
+#| warning: false
+#| echo: true
+
+ggplot(applications_gender_major, aes(x = Major, y = Total, fill = Gender)) +
+  geom_bar(stat = "identity", position = "fill") +  
+  labs(title = "Applications% by Major and Gender",
+       x = "Major",
+       y = "Percentage") +
+  geom_hline(yintercept = 0.5, linetype = "dotted", color = "black", size = 0.5) +
+  scale_y_continuous(labels = scales::percent) + 
+  theme_minimal()
+```
+
+It can be seen that in major A, B, D, F and Other majors, the numbers of applications from female is less than that of male. This stage conclusion will be saved for future discussion.
+
+## Admission rates by gender and major & difference
+
+In this section, the admission rate for each gender for each major is calculated, and later the difference between them is also shown in the bar chart below. From the conclusion just drawn in last section, it makes sense that less female applicants in those majors reflects that female applicants might be relatively less competitive and less willing to compete with male applicants in those majors. This may lead to lower rate of admission in those majors (A, B, D, F and Other majors)
+
+```{r}
+#| label: Agg-major/gender-rate-data
+#| warning: false
+#| echo: true
+
+admission_rates_gender_major <- data %>%
+  group_by(Major, Gender) %>%
+  summarize(
+    Total = n(),
+    Accepted = sum(Admission == "Accepted"),
+    Admission_Rate = Accepted / Total, 
+    .groups = "keep"
+  )
+
+#head(admission_rates_gender_major)
+```
+
+```{r}
+#| label: Major/gender-rates-bar-chart
+#| warning: false
+#| echo: true
+
+ggplot(admission_rates_gender_major, aes(x = Major, y = Admission_Rate, fill = Gender)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Admission Rates by Major and Gender", 
+       x = "Major", 
+       y = "Admission Rate") +
+  theme_minimal()
+```
+
+```{r}
+#| label: Agg-major/gender-rate-diff-data
+#| warning: false
+#| echo: true
+
+admission_rate_diff <- admission_rates_gender_major %>%
+  select(Major, Gender, Admission_Rate) %>%
+  pivot_wider(names_from = Gender, values_from = Admission_Rate) %>%
+  mutate(Difference = M - F)
+```
+
+```{r}
+#| label: Major/gender-rate-diff-bar-chart
+#| warning: false
+#| echo: true
+
+ggplot(admission_rate_diff, aes(x = Major, y = Difference, fill = Difference > 0)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("dark green", "skyblue"), 
+                    labels = c("Female Higher", "Male Higher")) +  
+  labs(title = "Difference Between Male and Female Admission Rates by Major",
+       x = "Major", 
+       y = "Difference (Male - Female)") +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "black", size = 0.5) +  
+  theme_minimal() +
+  theme(legend.title = element_blank())
+```
+
+Surprisingly, the female admission rates for those majors(A, B, D, F) are actually higher than those of male, except Other majors, which means UC Berkeley has already put effort in re-balance the gender-bias in numbers of application for both female and male. But it cannot make up for the enormous gender-difference that is existing in some majors (like A and B, they almost have no female applicants).
+
+Also, the admission rate for all other majors (Male higher) shows that gender bias still exist, but the reason is rather complicated, including the willingness of applicants choosing major, nature of major itself, or gender bias in earlier stage of education. For instance, girls are less likely to receive chance to be educated in field of engineering and math due to stereotype, so they are less willing to choose those related majors. So eliminating gender discrimination in all fields are vital to resolve such kind of gender bias problem.
