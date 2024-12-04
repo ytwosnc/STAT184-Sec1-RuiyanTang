@@ -1,0 +1,3 @@
+Only one file in this data folder, which is admission info of UCB in 1973.
+
+This dataset contains 4 columns and 12763 rows, or in other words, application information and their results.
