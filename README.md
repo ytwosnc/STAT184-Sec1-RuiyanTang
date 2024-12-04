@@ -5,7 +5,7 @@ The qmd file in this Repo is about the study on UCB's potential admission bias i
 # Methods and Graphs chosen
 First, some basic statistics will be given on each gender's admission rate, which is 34.5% for female applicants and 44.5% for male applicants.
 Then, sight will be cast on gender difference across different majors, both from absolute numbers and relative ratios. Bar charts and stack bar charts are used to represent gender difference.
-![Graph](sample-graphs/000010.png)
+![Graph](sample-graphs/WechatIMG15.jpg)
 
 Above is the Stack bar chart for Percentage of applications across each major and gender, the spotted line is 50%. Other graphs can be viewed in sample-graphs folder in main branch.
 
